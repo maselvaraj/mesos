@@ -394,6 +394,14 @@ void Master::initialize()
     roles[role] = new Role(roleInfo);
   }
 
+  // Verify the timeout is greater than zero.
+  if (flags.offer_timeout.isSome() &&
+      flags.offer_timeout.get() <= Duration::zero()) {
+    EXIT(1) << "Invalid value '" << flags.offer_timeout.get() << "' "
+            << "for --offer_timeout: Must be greater than zero.";
+  }
+
+
   // Initialize the allocator.
   allocator->initialize(flags, self(), roleInfos);
 
@@ -2921,6 +2929,15 @@ void Master::offer(const FrameworkID& frameworkId,
     framework->addOffer(offer);
     slave->addOffer(offer);
 
+    if (flags.offer_timeout.isSome()) {
+      // Rescind the offer after the timeout elapses.
+      offerTimers[offer->id()] =
+        delay(flags.offer_timeout.get(),
+              self(),
+              &Self::offerTimeout,
+              offer->id());
+    }
+
     // Add the offer *AND* the corresponding slave's PID.
     message.add_offers()->MergeFrom(*offer);
     message.add_pids(slave->pid);
@@ -3765,6 +3782,15 @@ void Master::removeTask(Task* task)
   delete task;
 }
 
+void Master::offerTimeout(const OfferID& offerId)
+{
+  Offer* offer = getOffer(offerId);
+  if (offer != NULL) {
+    allocator->resourcesRecovered(
+        offer->framework_id(), offer->slave_id(), offer->resources(), None());
+    removeOffer(offer, true);
+  }
+}
 
 // TODO(vinod): Instead of 'removeOffer()', consider implementing
 // 'useOffer()', 'discardOffer()' and 'rescindOffer()' for clarity.
@@ -3790,6 +3816,13 @@ void Master::removeOffer(Offer* offer, bool rescind)
     RescindResourceOfferMessage message;
     message.mutable_offer_id()->MergeFrom(offer->id());
     send(framework->pid, message);
+  }
+
+  // Remove and cancel offer removal timers. Canceling the Timers is
+  // only done to avoid having too many active Timers in libprocess.
+  if (offerTimers.contains(offer->id())) {
+    Timer::cancel(offerTimers[offer->id()]);
+    offerTimers.erase(offer->id());
   }
 
   // Delete it.

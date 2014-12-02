@@ -322,6 +322,9 @@ protected:
   // Forwards the update to the framework.
   Try<Nothing> forward(const StatusUpdate& update, const process::UPID& pid);
 
+  // Remove an offer after specified timeout
+  void offerTimeout(const OfferID& offerId);
+
   // Remove an offer and optionally rescind the offer as well.
   void removeOffer(Offer* offer, bool rescind = false);
 
@@ -456,6 +459,7 @@ private:
   } frameworks;
 
   hashmap<OfferID, Offer*> offers;
+  hashmap<OfferID, process::Timer> offerTimers;
 
   hashmap<std::string, Role*> roles;
 

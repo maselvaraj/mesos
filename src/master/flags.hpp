@@ -206,6 +206,15 @@ public:
         "Path to a file with a list of credentials.\n"
         "Each line contains 'principal' and 'secret' separated by whitespace.\n"
         "Path could be of the form 'file:///path/to/file' or '/path/to/file'.");
+    
+    // TODO(karya): When we have optimistic offers, this will only
+    // benefit frameworks that accidentally lose an offer.
+    add(&Flags::offer_timeout,
+        "offer_timeout",
+        "Duration of time before an offer is rescinded from a framework.\n"
+        "This helps fairness when running frameworks that hold on to offers,\n"
+        "or frameworks that accidentally drop offers.\n");
+  }
 
     // TODO(vinod): Expose this flag once the authorization feature is
     // code complete.
@@ -258,6 +267,7 @@ public:
   bool authenticate_slaves;
   Option<std::string> credentials;
   Option<JSON::Object> acls;
+  Option<Duration> offer_timeout;
 };
 
 } // namespace mesos {
