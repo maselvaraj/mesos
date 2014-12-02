@@ -3787,7 +3787,7 @@ void Master::offerTimeout(const OfferID& offerId)
   Offer* offer = getOffer(offerId);
   if (offer != NULL) {
     allocator->resourcesRecovered(
-        offer->framework_id(), offer->slave_id(), offer->resources(), None());
+        offer->framework_id(), offer->slave_id(), offer->resources());
     removeOffer(offer, true);
   }
 }

@@ -214,7 +214,6 @@ public:
         "Duration of time before an offer is rescinded from a framework.\n"
         "This helps fairness when running frameworks that hold on to offers,\n"
         "or frameworks that accidentally drop offers.\n");
-  }
 
     // TODO(vinod): Expose this flag once the authorization feature is
     // code complete.
