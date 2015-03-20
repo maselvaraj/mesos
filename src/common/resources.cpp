@@ -537,7 +537,11 @@ bool Resources::isAllocatable(const Resource& resource)
 bool Resources::isZero(const Resource& resource)
 {
   if (resource.type() == Value::SCALAR) {
-    return resource.scalar().value() == 0;
+    //resource will not be negative or greater than 
+    if ((resource.scalar().value() < 0.0) || 
+        (std::fabs(resource.scalar().value() - 0.0f) <= 0.000001)) {
+      return true;
+    }  
   } else if (resource.type() == Value::RANGES) {
     return resource.ranges().range_size() == 0;
   } else if (resource.type() == Value::SET) {
