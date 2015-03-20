@@ -228,7 +228,15 @@ public:
         "Text file Example:\n"
         "username secret\n"
         );
-
+ 
+    // TODO(karya): When we have optimistic offers, this will only
+    // benefit frameworks that accidentally lose an offer.
+    add(&Flags::offer_timeout,
+        "offer_timeout",
+        "Duration of time before an offer is rescinded from a framework.\n"
+        "This helps fairness when running frameworks that hold on to offers,\n"
+        "or frameworks that accidentally drop offers.\n");
+    
     add(&Flags::acls,
         "acls",
         "The value could be a JSON formatted string of ACLs\n"
@@ -317,6 +325,7 @@ public:
   Option<std::string> credentials;
   Option<ACLs> acls;
   Option<RateLimits> rate_limits;
+  Option<Duration> offer_timeout;
 
 #ifdef WITH_NETWORK_ISOLATOR
   Option<size_t> max_executors_per_slave;
