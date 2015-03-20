@@ -47,6 +47,7 @@ void DRFSorter::add(const string& name, double weight)
   Client client(name, 0, 0);
   clients.insert(client);
 
+  resetAllocations();
   allocations[name] = Resources();
   weights[name] = weight;
 }
@@ -238,6 +239,20 @@ double DRFSorter::calculateShare(const string& name)
   return share / weights[name];
 }
 
+void DRFSorter::resetAllocations()
+{
+  set<Client, DRFComparator> temp;
+
+  set<Client, DRFComparator>::iterator it;
+  for (it = clients.begin(); it != clients.end(); it++) {
+    Client client((*it).name, (*it).share, 0);
+    temp.insert(client);
+  }
+ 
+  clients = temp;
+
+  return;  
+}
 
 set<Client, DRFComparator>::iterator DRFSorter::find(const string& name)
 {
